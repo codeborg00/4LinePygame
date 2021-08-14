@@ -14,6 +14,7 @@ WHITE_SQUARE = pygame.image.load(os.path.join('Assets', 'white_square.png'))
 BLACK_SQUARE = pygame.image.load(os.path.join('Assets', 'black_square.png'))
 PLACEHOLDER0 = pygame.image.load(os.path.join('Assets', 'placeholder.png'))
 PLACEHOLDER1 = pygame.image.load(os.path.join('Assets', 'placeholder2.png'))
+STARTING_BLOCK = pygame.image.load(os.path.join('Assets', 'starting_block.png'))
 
 
 # Defining the 2d array which will represent the board
@@ -34,7 +35,7 @@ board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
@@ -61,7 +62,6 @@ board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 ]
 
 
-
 def draw_board():
 
     # Drawing the board to the screen
@@ -69,14 +69,16 @@ def draw_board():
     for x in range(40):
         row = 50
         position = column, row
-        for x in range(28):
-            if (column + row) % 2 != 0:
+        for y in range(28):
+            if (column + row) % 2 != 0 and board[x][y] == 0:
                 SCREEN.blit(WHITE_SQUARE, position)
             
-            else: 
+            elif (column + row) % 2 == 0 and board[x][y] == 0: 
                 SCREEN.blit(BLACK_SQUARE, position)
-                
-                
+            
+            else:
+                SCREEN.blit(STARTING_BLOCK, position)
+                   
             row += 25
             position = column, row
 
@@ -87,9 +89,8 @@ def draw_board():
 
 
 
-#Simulates placing a piece. Not added to board 2d array yet!
+#Places a piec onto the screen. checks if action can be done and if yes places the placeholder according to the current_player. If action is succesfull changes the player.
 def place_piece(player):
-    print(f'Current player is {player}')
     bool = pygame.mouse.get_pressed()
     if bool[0]:
         board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
@@ -98,34 +99,50 @@ def place_piece(player):
         column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
         row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
 
-
         #Checks if the coordinates are in the available range and if a piece has net yet been placed in that location, places a piece
         if board_column >= 0 and board_row >= 0:
             if board_column < 40 and board_row < 28:
                 if board[board_column][board_row] == 0:
-
-                    # Places the square and switches the current player
-                    if player == 0:
-                        SCREEN.blit(PLACEHOLDER0, (column, row))
-                        board[board_column][board_row] = Piece(player)
-                        pygame.display.update()
-                        new_player = 1
-                        print(f'New player is {new_player}')
-                        return new_player
-                    else:
-                        SCREEN.blit(PLACEHOLDER1, (column, row))
-                        board[board_column][board_row] = Piece(player)
-                        pygame.display.update()
-                        new_player = 0
-                        print(f'New player is {new_player}')
-                        return new_player
+                    if check_move((board_column, board_row)):
+                        print(check_move((board_column, board_row)))
+                        # Places the square and switches the current player
+                        if player == 0:
+                            SCREEN.blit(PLACEHOLDER0, (column, row))
+                            board[board_column][board_row] = Piece(player)
+                            pygame.display.update()
+                            new_player = 1
+                            return new_player
+                        else:
+                            SCREEN.blit(PLACEHOLDER1, (column, row))
+                            board[board_column][board_row] = Piece(player)
+                            pygame.display.update()
+                            new_player = 0
+                            return new_player
 
     # If button not pressed or invalid piece placement, player remains the same.
     return player
-            
 
-        
 
+
+# checks if a certain move is valid, namely whether a placeholder will sit next to another placeholder
+def check_move(position):
+
+    valid = board[position[0] + 1][position[1]] != 0
+    print(board[position[0] + 1][position[1]])
+    if valid:
+        print('1 ' + str(valid))
+        return valid
+    valid = board[position[0] - 1][position[1]] != 0
+    if valid:
+        print('2 ' + str(valid))
+        return valid
+    valid = board[position[0]][position[1] + 1] != 0
+    if valid:
+        print('3 ' + str(valid))
+        return valid
+    valid = board[position[0]][position[1] - 1] != 0
+    print('4 ' + str(valid))
+    return valid
 
 
 
@@ -137,7 +154,7 @@ def main():
     draw_board()
 
     while run:
-        clock.tick(10)
+        clock.tick(60)
         player = place_piece(player)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
