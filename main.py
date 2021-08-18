@@ -1,6 +1,6 @@
 import pygame
 import os
-from classes import Piece
+from classes import Piece, StartingBlock
 import math
 
 pygame.init()
@@ -35,7 +35,7 @@ board = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],
@@ -88,6 +88,35 @@ def draw_board():
     pygame.display.update()
 
 
+def select_start():
+    player = 0
+    run = True
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+        bool = pygame.mouse.get_pressed()
+        if bool[0]:
+            board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
+            board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+
+            column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
+            row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
+
+
+
+            if board_column >= 15 and board_row >= 9:
+                if board_column < 26 and board_row < 20:
+                    if board[board_column][board_row] == 0:
+                        SCREEN.blit(STARTING_BLOCK, (column, row))
+                        pygame.display.update()
+                        board[board_column][board_row] = StartingBlock(player)
+                        if player == 1:
+                            break
+                        player = 1
+                    
+
+
 
 #Places a piec onto the screen. checks if action can be done and if yes places the placeholder according to the current_player. If action is succesfull changes the player.
 def place_piece(player):
@@ -104,7 +133,6 @@ def place_piece(player):
             if board_column < 40 and board_row < 28:
                 if board[board_column][board_row] == 0:
                     if check_move((board_column, board_row)):
-                        print(check_move((board_column, board_row)))
                         # Places the square and switches the current player
                         if player == 0:
                             SCREEN.blit(PLACEHOLDER0, (column, row))
@@ -128,21 +156,21 @@ def place_piece(player):
 def check_move(position):
 
     valid = board[position[0] + 1][position[1]] != 0
-    print(board[position[0] + 1][position[1]])
     if valid:
-        print('1 ' + str(valid))
         return valid
     valid = board[position[0] - 1][position[1]] != 0
     if valid:
-        print('2 ' + str(valid))
         return valid
     valid = board[position[0]][position[1] + 1] != 0
     if valid:
-        print('3 ' + str(valid))
         return valid
     valid = board[position[0]][position[1] - 1] != 0
-    print('4 ' + str(valid))
     return valid
+
+
+
+        
+
 
 
 
@@ -151,11 +179,14 @@ def main():
     clock = pygame.time.Clock()
     run = True
     player = 0
+    selected_blocks = [[],[]]
     draw_board()
+    select_start()
 
     while run:
         clock.tick(60)
         player = place_piece(player)
+        #selected_blocks = claim_line(player, selected_blocks)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
