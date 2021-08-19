@@ -118,7 +118,7 @@ def select_start():
 
 
 
-#Places a piec onto the screen. checks if action can be done and if yes places the placeholder according to the current_player. If action is succesfull changes the player.
+#Places a piece onto the screen. checks if action can be done and if yes places the placeholder according to the current_player. If action is succesfull changes the player.
 def place_piece(player):
     bool = pygame.mouse.get_pressed()
     if bool[0]:
@@ -155,21 +155,34 @@ def place_piece(player):
 # checks if a certain move is valid, namely whether a placeholder will sit next to another placeholder
 def check_move(position):
 
-    valid = board[position[0] + 1][position[1]] != 0
-    if valid:
-        return valid
-    valid = board[position[0] - 1][position[1]] != 0
-    if valid:
-        return valid
-    valid = board[position[0]][position[1] + 1] != 0
-    if valid:
-        return valid
+    #Try and except statements are in place so as not to get a list index out of range error when checking a move on the 40th column or 28th row
+    try:
+        valid = board[position[0] + 1][position[1]] != 0
+        if valid:
+            return valid
+
+    except:
+        pass
+
+    try: 
+        valid = board[position[0] - 1][position[1]] != 0
+        if valid:
+            return valid
+
+    except:
+        pass
+
+    try:
+        valid = board[position[0]][position[1] + 1] != 0
+        if valid:
+            return valid
+
+    except:
+        pass
+
     valid = board[position[0]][position[1] - 1] != 0
     return valid
 
-
-
-        
 
 
 
