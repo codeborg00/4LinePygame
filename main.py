@@ -12,9 +12,11 @@ pygame.display.set_caption('4line')
 FPS = 1
 WHITE_SQUARE = pygame.image.load(os.path.join('Assets', 'white_square.png'))
 BLACK_SQUARE = pygame.image.load(os.path.join('Assets', 'black_square.png'))
-PLACEHOLDER0 = pygame.image.load(os.path.join('Assets', 'placeholder.png'))
-PLACEHOLDER1 = pygame.image.load(os.path.join('Assets', 'placeholder2.png'))
+PLACEHOLDER0 = pygame.image.load(os.path.join('Assets', 'circle.png'))
+PLACEHOLDER1 = pygame.image.load(os.path.join('Assets', 'cross.png'))
 STARTING_BLOCK = pygame.image.load(os.path.join('Assets', 'starting_block.png'))
+CLAIMED_CIRCLE = pygame.image.load(os.path.join('Assets', 'claimed_circle.png'))
+CLAIMED_CROSS = pygame.image.load(os.path.join('Assets', 'claimed_cross.png'))
 
 
 # Defining the 2d array which will represent the board
@@ -119,36 +121,37 @@ def select_start():
 
 
 #Places a piece onto the screen. checks if action can be done and if yes places the placeholder according to the current_player. If action is succesfull changes the player.
-def place_piece(player):
-    bool = pygame.mouse.get_pressed()
-    if bool[0]:
-        board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
-        board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+def place_piece(player, piece_placed):
+    if piece_placed == False:
+        bool = pygame.mouse.get_pressed()
+        if bool[0]:
+            board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
+            board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
 
-        column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
-        row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
+            column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
+            row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
 
-        #Checks if the coordinates are in the available range and if a piece has net yet been placed in that location, places a piece
-        if board_column >= 0 and board_row >= 0:
-            if board_column < 40 and board_row < 28:
-                if board[board_column][board_row] == 0:
-                    if check_move((board_column, board_row)):
-                        # Places the square and switches the current player
-                        if player == 0:
-                            SCREEN.blit(PLACEHOLDER0, (column, row))
-                            board[board_column][board_row] = Piece(player)
-                            pygame.display.update()
-                            new_player = 1
-                            return new_player
-                        else:
-                            SCREEN.blit(PLACEHOLDER1, (column, row))
-                            board[board_column][board_row] = Piece(player)
-                            pygame.display.update()
-                            new_player = 0
-                            return new_player
+            #Checks if the coordinates are in the available range and if a piece has net yet been placed in that location, places a piece
+            if board_column >= 0 and board_row >= 0:
+                if board_column < 40 and board_row < 28:
+                    if board[board_column][board_row] == 0:
+                        if check_move((board_column, board_row)):
+                            # Places the square and switches the current player
+                            if player == 0:
+                                SCREEN.blit(PLACEHOLDER0, (column, row))
+                                board[board_column][board_row] = Piece(player)
+                                pygame.display.update()
+                                piece_placed = True
+                                return piece_placed
+                            else:
+                                SCREEN.blit(PLACEHOLDER1, (column, row))
+                                board[board_column][board_row] = Piece(player)
+                                pygame.display.update()
+                                piece_placed = True
+                                return piece_placed
 
     # If button not pressed or invalid piece placement, player remains the same.
-    return player
+    return piece_placed
 
 
 
@@ -163,7 +166,6 @@ def check_move(position):
 
     except:
         pass
-
     try: 
         valid = board[position[0] - 1][position[1]] != 0
         if valid:
@@ -171,18 +173,154 @@ def check_move(position):
 
     except:
         pass
-
     try:
         valid = board[position[0]][position[1] + 1] != 0
         if valid:
             return valid
-
     except:
         pass
 
     valid = board[position[0]][position[1] - 1] != 0
     return valid
 
+def claim_line(player, selected_blocks):
+    bool = pygame.mouse.get_pressed()
+    if bool[2]:
+        board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
+        board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+        if board_column >= 0 and board_row >= 0:
+            if board_column < 40 and board_row < 28:
+                for x in selected_blocks[player]:
+                     if x == (board_column, board_row):
+                         return selected_blocks
+
+                if board[board_column][board_row] == 0:
+                    return selected_blocks
+
+                if board[board_column][board_row].team != player:
+                    return selected_blocks
+                
+                selected_blocks[player].append((board_column, board_row))
+                print(selected_blocks[player])
+            
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        selected_blocks[player].clear()
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_RIGHT]:
+        #First check a vertical solve
+        
+        if len(selected_blocks[player]) != 4:
+            selected_blocks[player].clear()
+            return selected_blocks
+
+        column_nums = []
+        row_nums = []
+        valid_claim = False
+
+        for tuple in selected_blocks[player]:
+            column_nums.append(tuple[0])
+            row_nums.append(tuple[1])
+
+        for index in range(len(column_nums)):
+            if column_nums[index] == column_nums[index - 1]:
+                valid = True
+                continue
+
+            else:
+                valid = False
+                print(valid)
+                break
+
+        if valid:
+            print("Debug 2")
+            row_nums.sort()
+            for index in range(len(row_nums)):
+                if index == len(row_nums) - 1:
+                    break
+                if row_nums[index] + 1 == row_nums[index + 1]:
+                    valid_claim = True
+        
+        if valid_claim:
+            for tuple in selected_blocks[player]:
+                if player == 0:
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    pygame.display.update()
+                else:
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    pygame.display.update()
+
+
+            selected_blocks[player].clear()
+            return selected_blocks
+
+
+
+        #Then check for a horizontal one
+        print("Debug 1")
+        column_nums = []
+        row_nums = []
+        valid_claim = False
+
+        for tuple in selected_blocks[player]:
+            column_nums.append(tuple[0])
+            row_nums.append(tuple[1])
+
+        for index in range(len(column_nums)):
+            if row_nums[index] == row_nums[index - 1]:
+                valid = True
+                continue
+
+            else:
+                valid = False
+                break
+
+        if valid:
+            print("Debug 2")
+            column_nums.sort()
+            for index in range(len(column_nums)):
+                if index == len(column_nums) - 1:
+                    break
+                if column_nums[index] + 1 == column_nums[index + 1]:
+                    valid_claim = True
+                else: 
+                    return selected_blocks
+        
+        if valid_claim:
+            for tuple in selected_blocks[player]:
+                if player == 0:
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    pygame.display.update()
+                else:
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    pygame.display.update()
+            
+            selected_blocks[player].clear()
+            return selected_blocks
+
+                
+
+
+        
+    return selected_blocks
+
+
+def change_player(player, piece_placed):
+    new_player = player
+    if piece_placed:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_UP]:
+            if player == 0:
+                new_player = 1
+                piece_placed = False
+            else:
+                new_player = 0
+                piece_placed = False
+    
+
+    return new_player, piece_placed
+        
 
 
 
@@ -193,13 +331,16 @@ def main():
     run = True
     player = 0
     selected_blocks = [[],[]]
+    piece_placed = False
     draw_board()
     select_start()
 
     while run:
         clock.tick(60)
-        player = place_piece(player)
-        #selected_blocks = claim_line(player, selected_blocks)
+        piece_placed = place_piece(player, piece_placed)
+        print(piece_placed)
+        selected_blocks = claim_line(player, selected_blocks)
+        player, piece_placed = change_player(player, piece_placed)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
