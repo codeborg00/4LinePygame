@@ -230,11 +230,9 @@ def claim_line(player, selected_blocks):
 
             else:
                 valid = False
-                print(valid)
                 break
 
         if valid:
-            print("Debug 2")
             row_nums.sort()
             for index in range(len(row_nums)):
                 if index == len(row_nums) - 1:
@@ -258,7 +256,6 @@ def claim_line(player, selected_blocks):
 
 
         #Then check for a horizontal one
-        print("Debug 1")
         column_nums = []
         row_nums = []
         valid_claim = False
@@ -267,7 +264,7 @@ def claim_line(player, selected_blocks):
             column_nums.append(tuple[0])
             row_nums.append(tuple[1])
 
-        for index in range(len(column_nums)):
+        for index in range(len(row_nums)):
             if row_nums[index] == row_nums[index - 1]:
                 valid = True
                 continue
@@ -277,7 +274,6 @@ def claim_line(player, selected_blocks):
                 break
 
         if valid:
-            print("Debug 2")
             column_nums.sort()
             for index in range(len(column_nums)):
                 if index == len(column_nums) - 1:
@@ -299,7 +295,58 @@ def claim_line(player, selected_blocks):
             selected_blocks[player].clear()
             return selected_blocks
 
-                
+            
+
+            #Now time to check any diagonals
+
+        column_nums = []
+        row_nums = []
+        valid_claim = False
+
+        for tuple in selected_blocks[player]:
+            column_nums.append(tuple[0])
+            print(column_nums)
+            row_nums.append(tuple[1])
+        
+        row_nums.sort()
+        column_nums.sort()
+
+        for index in range(len(row_nums)):
+            if index == len(row_nums) - 1:
+                    break
+
+
+            if  row_nums[index] + 1 == row_nums[index + 1]:
+                valid = True
+                continue
+
+            else:
+                valid = False
+                break
+
+
+        if valid:
+            for index in range(len(column_nums)):
+                if index == len(column_nums) - 1:
+                    break
+                if column_nums[index] + 1 == column_nums[index + 1]:
+                    valid_claim = True
+                    print(valid_claim)
+                else: 
+                    print(column_nums)
+                    return selected_blocks
+        
+        if valid_claim:
+            for tuple in selected_blocks[player]:
+                if player == 0:
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    pygame.display.update()
+                else:
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    pygame.display.update()
+            
+            selected_blocks[player].clear()
+            return selected_blocks
 
 
         
@@ -338,7 +385,6 @@ def main():
     while run:
         clock.tick(60)
         piece_placed = place_piece(player, piece_placed)
-        print(piece_placed)
         selected_blocks = claim_line(player, selected_blocks)
         player, piece_placed = change_player(player, piece_placed)
         for event in pygame.event.get():
