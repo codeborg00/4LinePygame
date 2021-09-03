@@ -5,3 +5,4 @@ class Piece:
 class StartingBlock:
     def __init__(self, team):
         self.team = team
+
