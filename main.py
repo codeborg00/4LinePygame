@@ -1,14 +1,14 @@
 import pygame
+import time
 import os
 from classes import Piece, StartingBlock
 import math
 import networkx as nx
-import inspect
 from matplotlib import pyplot as plt
 
 pygame.init()
 
-SIZE = WIDTH, HEIGHT = 1200, 800
+SIZE = WIDTH, HEIGHT = 1800, 1000
 SCREEN = pygame.display.set_mode(SIZE)
 pygame.display.set_caption('4line')
 
@@ -21,9 +21,37 @@ STARTING_CROSS = pygame.image.load(os.path.join('Assets', 'starting_cross.png'))
 STARTING_CIRCLE = pygame.image.load(os.path.join('Assets', 'starting_circle.png'))
 CLAIMED_CIRCLE = pygame.image.load(os.path.join('Assets', 'claimed_circle.png'))
 CLAIMED_CROSS = pygame.image.load(os.path.join('Assets', 'claimed_cross.png'))
+TITLE = pygame.image.load(os.path.join('Assets', 'title.png'))
+START_GAME = pygame.image.load(os.path.join('Assets', 'start_game.png'))
+RULES = pygame.image.load(os.path.join('Assets', 'rules.png'))
 
 def start_screen():
-    pass
+    SCREEN.blit(TITLE, (708, 200))
+    SCREEN.blit(START_GAME, (750, 450))
+    SCREEN.blit(RULES, (750, 600))
+    pygame.display.update()
+    run = True
+    while run:
+
+        bool = pygame.mouse.get_pressed()
+        if bool[0]:
+
+            column = pygame.mouse.get_pos()[0]
+            row = pygame.mouse.get_pos()[1]
+
+            print((column, row))
+
+            if column > 750 and column < 1050:
+                if row > 450 and row < 550:
+                    run = False
+                    time.sleep(0.1)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+                time.sleep(0.1)
+
+
 
 
 
@@ -80,9 +108,9 @@ board_graph = nx.Graph()
 def draw_board():
 
     # Drawing the board to the screen
-    position = column, row = 100, 50
+    position = column, row = 400, 150
     for x in range(40):
-        row = 50
+        row = 150
         position = column, row
         for y in range(28):
             if (column + row) % 2 != 0 and board[x][y] == 0:
@@ -104,10 +132,10 @@ def update_board():
         for y in range(28):
             if board[x][y] == 0:
                 if (x + y) % 2 != 0 and board[x][y] == 0:
-                    SCREEN.blit(WHITE_SQUARE, (x * 25 + 100, y * 25 + 50))
+                    SCREEN.blit(WHITE_SQUARE, (x * 25 + 400, y * 25 + 150))
             
                 elif (x + y) % 2 == 0 and board[x][y] == 0: 
-                    SCREEN.blit(BLACK_SQUARE, (x * 25 + 100, y * 25 + 50))
+                    SCREEN.blit(BLACK_SQUARE, (x * 25 + 400, y * 25 + 150))
             
             
 
@@ -124,11 +152,11 @@ def select_start():
                 run = False
         bool = pygame.mouse.get_pressed()
         if bool[0]:
-            board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
-            board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+            board_column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25)
+            board_row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25)
 
-            column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
-            row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
+            column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25) * 25 + 400
+            row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25) * 25 + 150
 
 
 
@@ -158,11 +186,11 @@ def place_piece(player, piece_placed, available_moves, move, special_moves):
     if available_moves > 0:
         bool = pygame.mouse.get_pressed()
         if bool[0]:
-            board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
-            board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+            board_column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25)
+            board_row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25)
 
-            column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
-            row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
+            column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25) * 25 + 400
+            row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25) * 25 + 150
 
             #Checks if the coordinates are in the available range and if a piece has net yet been placed in that location, places a piece
             if board_column >= 0 and board_row >= 0:
@@ -190,11 +218,11 @@ def place_piece(player, piece_placed, available_moves, move, special_moves):
     elif special_moves > 0:
         bool = pygame.mouse.get_pressed()
         if bool[0]:
-            board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
-            board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+            board_column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25)
+            board_row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25)
 
-            column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25) * 25 + 100
-            row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25) * 25 + 50
+            column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25) * 25 + 400
+            row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25) * 25 + 150
 
             #Checks if the coordinates are in the available range and if a piece has net yet been placed in that location, places a piece
             if board_column >= 0 and board_row >= 0:
@@ -297,8 +325,8 @@ def check_move(position, move, player):
 def claim_line(player, selected_blocks, available_moves, special_moves):
     bool = pygame.mouse.get_pressed()
     if bool[2]:
-        board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
-        board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+        board_column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25)
+        board_row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25)
         if board_column >= 0 and board_row >= 0:
             if board_column < 40 and board_row < 28:
                 for x in selected_blocks[player]:
@@ -353,10 +381,10 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
         if valid_claim:
             for tuple in selected_blocks[player]:
                 if player == 0:
-                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
                 else:
-                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
 
                 board[tuple[0]][tuple[1]].status = True
@@ -398,10 +426,10 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
         if valid_claim:
             for tuple in selected_blocks[player]:
                 if player == 0:
-                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
                 else:
-                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
 
                 board[tuple[0]][tuple[1]].status = True
@@ -450,10 +478,10 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
         if valid_claim:
             for tuple in selected_blocks[player]:
                 if player == 0:
-                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
                 else:
-                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
 
                 board[tuple[0]][tuple[1]].status = True
@@ -505,10 +533,10 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
             special_moves += 1
             for tuple in selected_blocks[player]:
                 if player == 0:
-                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
                 else:
-                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 100, tuple[1] * 25 + 50))
+                    SCREEN.blit(CLAIMED_CROSS, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
                     pygame.display.update()
 
                 board[tuple[0]][tuple[1]].status = True
@@ -548,11 +576,12 @@ def delete_piece(start_blocks, special_moves, piece_placed):
     if special_moves > 0:
 
         if bool[1]:
-            board_column = math.floor((pygame.mouse.get_pos()[0] - 100) / 25)
-            board_row = math.floor((pygame.mouse.get_pos()[1] - 50) / 25)
+            board_column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25)
+            board_row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25)
 
             if isinstance(board[board_column][board_row], Piece):
                 print('Debug 1')
+                print(board[board_column][board_row].status)
                 claimed = board[board_column][board_row].status
                 print(claimed)
                 if claimed:
@@ -596,6 +625,7 @@ def delete_piece(start_blocks, special_moves, piece_placed):
 # Main loop. Refreshes the program and calls methods.
 def main():
     move = 0
+    start_screen()
     clock = pygame.time.Clock()
     run = True
     player = 0
