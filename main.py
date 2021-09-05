@@ -24,6 +24,19 @@ CLAIMED_CROSS = pygame.image.load(os.path.join('Assets', 'claimed_cross.png'))
 TITLE = pygame.image.load(os.path.join('Assets', 'title.png'))
 START_GAME = pygame.image.load(os.path.join('Assets', 'start_game.png'))
 RULES = pygame.image.load(os.path.join('Assets', 'rules.png'))
+ACTIVE_PLAYER1 = pygame.image.load(os.path.join('Assets', 'active_player1.png'))
+ACTIVE_PLAYER2 = pygame.image.load(os.path.join('Assets', 'active_player2.png'))
+PASSIVE_PLAYER1 = pygame.image.load(os.path.join('Assets', 'passive_player1.png'))
+PASSIVE_PLAYER2 = pygame.image.load(os.path.join('Assets', 'passive_player2.png'))
+CLAIMS_ACTIVE0 = pygame.image.load(os.path.join('Assets', '0claims_active.png'))
+CLAIMS_ACTIVE1 = pygame.image.load(os.path.join('Assets', '1claims_active.png'))
+CLAIMS_ACTIVE2 = pygame.image.load(os.path.join('Assets', '2claims_active.png'))
+CLAIMS_PASSIVE0 = pygame.image.load(os.path.join('Assets', '0claims_passive.png'))
+CLAIMS_PASSIVE1 = pygame.image.load(os.path.join('Assets', '1claims_passive.png'))
+CLAIMS_PASSIVE2 = pygame.image.load(os.path.join('Assets', '2claims_passive.png'))
+PLAYER1_WON = pygame.image.load(os.path.join('Assets', 'player1_won.png'))
+PLAYER2_WON = pygame.image.load(os.path.join('Assets', 'player2_won.png'))
+
 
 def start_screen():
     SCREEN.blit(TITLE, (708, 200))
@@ -39,7 +52,6 @@ def start_screen():
             column = pygame.mouse.get_pos()[0]
             row = pygame.mouse.get_pos()[1]
 
-            print((column, row))
 
             if column > 750 and column < 1050:
                 if row > 450 and row < 550:
@@ -141,6 +153,63 @@ def update_board():
 
     pygame.display.update()
 
+def UI_display(player, claim_heads):
+    player1_claims = 0
+    player2_claims = 0
+    run = True
+
+    for block in claim_heads:
+        if block["player"] == 0:
+            player1_claims += 1
+        else:
+            player2_claims += 1
+
+    if player == 0:
+        SCREEN.blit(ACTIVE_PLAYER1, (125, 300))
+        SCREEN.blit(PASSIVE_PLAYER2, (1525, 300))
+        if player1_claims == 0:
+            SCREEN.blit(CLAIMS_ACTIVE0, (100, 400))
+        if player1_claims == 1:
+            SCREEN.blit(CLAIMS_ACTIVE1, (100, 400))
+        if player1_claims == 2:
+            SCREEN.blit(PLAYER1_WON, (750, 450))
+            SCREEN.blit(CLAIMS_ACTIVE2, (100, 400))
+            run = False
+        if player2_claims == 0:
+            SCREEN.blit(CLAIMS_PASSIVE0, (1500, 400))
+        if player2_claims == 1:
+            SCREEN.blit(CLAIMS_PASSIVE1, (1500, 400))
+        if player2_claims == 2:
+            SCREEN.blit(PLAYER2_WON, (750, 450))
+            SCREEN.blit(CLAIMS_PASSIVE2, (1500, 400))
+            run = False
+    else:
+        SCREEN.blit(PASSIVE_PLAYER1, (125, 300))
+        SCREEN.blit(ACTIVE_PLAYER2, (1525, 300))
+        if player1_claims == 0:
+            SCREEN.blit(CLAIMS_PASSIVE0, (100, 400))
+        if player1_claims == 1:
+            SCREEN.blit(CLAIMS_PASSIVE1, (100, 400))
+        if player1_claims == 2:
+            SCREEN.blit(PLAYER1_WON, (750, 450))
+            SCREEN.blit(CLAIMS_PASSIVE2, (100, 400))
+            run = False
+        if player2_claims == 0:
+            SCREEN.blit(CLAIMS_ACTIVE0, (1500, 400))
+        if player2_claims == 1:
+            SCREEN.blit(CLAIMS_ACTIVE1, (1500, 400))
+        if player2_claims == 2:
+            SCREEN.blit(PLAYER2_WON, (750, 450))
+            SCREEN.blit(CLAIMS_ACTIVE2, (1500, 400))
+            run = False
+    
+    pygame.display.update()
+
+    return run
+
+
+
+    
 
 def select_start():
     start_blocks = []
@@ -322,7 +391,7 @@ def check_move(position, move, player):
     else:
         return False, move
 
-def claim_line(player, selected_blocks, available_moves, special_moves):
+def claim_line(player, selected_blocks, available_moves, special_moves, claim_heads):
     bool = pygame.mouse.get_pressed()
     if bool[2]:
         board_column = math.floor((pygame.mouse.get_pos()[0] - 400) / 25)
@@ -331,13 +400,13 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
             if board_column < 40 and board_row < 28:
                 for x in selected_blocks[player]:
                      if x == (board_column, board_row):
-                         return selected_blocks, available_moves, special_moves
+                         return selected_blocks, available_moves, special_moves, claim_heads
 
                 if board[board_column][board_row] == 0:
-                    return selected_blocks, available_moves, special_moves
+                    return selected_blocks, available_moves, special_moves, claim_heads
 
                 if board[board_column][board_row].team != player:
-                    return selected_blocks, available_moves, special_moves
+                    return selected_blocks, available_moves, special_moves, claim_heads
                 
                 selected_blocks[player].append((board_column, board_row))
             
@@ -351,7 +420,7 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
         
         if len(selected_blocks[player]) != 4:
             selected_blocks[player].clear()
-            return selected_blocks, available_moves, special_moves
+            return selected_blocks, available_moves, special_moves, claim_heads
 
         column_nums = []
         row_nums = []
@@ -379,6 +448,10 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                     valid_claim = True
         
         if valid_claim:
+            claim_heads.append({
+                "piece": selected_blocks[player][0],
+                "player": player,
+            })
             for tuple in selected_blocks[player]:
                 if player == 0:
                     SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
@@ -391,7 +464,7 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
 
 
             selected_blocks[player].clear()
-            return selected_blocks, available_moves, special_moves
+            return selected_blocks, available_moves, special_moves, claim_heads
 
 
 
@@ -421,9 +494,13 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                 if column_nums[index] + 1 == column_nums[index + 1]:
                     valid_claim = True
                 else: 
-                    return selected_blocks, available_moves, special_moves
+                    return selected_blocks, available_moves, special_moves, claim_heads
         
         if valid_claim:
+            claim_heads.append({
+                "piece": selected_blocks[player][0],
+                "player": player,
+            })
             for tuple in selected_blocks[player]:
                 if player == 0:
                     SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
@@ -435,7 +512,7 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                 board[tuple[0]][tuple[1]].status = True
             
             selected_blocks[player].clear()
-            return selected_blocks, available_moves, special_moves
+            return selected_blocks, available_moves, special_moves, claim_heads
 
             
 
@@ -473,9 +550,13 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                 if column_nums[index] + 1 == column_nums[index + 1]:
                     valid_claim = True
                 else: 
-                    return selected_blocks, available_moves, special_moves
+                    return selected_blocks, available_moves, special_moves, claim_heads
         
         if valid_claim:
+            claim_heads.append({
+                "piece": selected_blocks[player][0],
+                "player": player,
+            })
             for tuple in selected_blocks[player]:
                 if player == 0:
                     SCREEN.blit(CLAIMED_CIRCLE, (tuple[0] * 25 + 400, tuple[1] * 25 + 150))
@@ -487,7 +568,7 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                 board[tuple[0]][tuple[1]].status = True
             
             selected_blocks[player].clear()
-            return selected_blocks, available_moves, special_moves
+            return selected_blocks, available_moves, special_moves, claim_heads
 
 
             #Now time to check if a square hass been claimed
@@ -526,7 +607,7 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                     if  column_nums[index] == column_nums[index + 1]:
                         valid_claim = True
                 else: 
-                    return selected_blocks, available_moves, special_moves
+                    return selected_blocks, available_moves, special_moves, claim_heads
         
         if valid_claim:
             available_moves += 1
@@ -542,10 +623,10 @@ def claim_line(player, selected_blocks, available_moves, special_moves):
                 board[tuple[0]][tuple[1]].status = True
             
             selected_blocks[player].clear()
-            return selected_blocks, available_moves, special_moves
+            return selected_blocks, available_moves, special_moves, claim_heads
 
         
-    return selected_blocks, available_moves, special_moves
+    return selected_blocks, available_moves, special_moves, claim_heads
 
 
 
@@ -569,7 +650,7 @@ def change_player(player, piece_placed, available_moves, special_moves):
 
     return new_player, piece_placed, available_moves
         
-def delete_piece(start_blocks, special_moves, piece_placed):
+def delete_piece(start_blocks, special_moves, piece_placed, claim_heads):
     remove = True
     all_islands = []
     bool = pygame.mouse.get_pressed()
@@ -580,10 +661,7 @@ def delete_piece(start_blocks, special_moves, piece_placed):
             board_row = math.floor((pygame.mouse.get_pos()[1] - 150) / 25)
 
             if isinstance(board[board_column][board_row], Piece):
-                print('Debug 1')
-                print(board[board_column][board_row].status)
                 claimed = board[board_column][board_row].status
-                print(claimed)
                 if claimed:
                     return special_moves, piece_placed
 
@@ -612,10 +690,14 @@ def delete_piece(start_blocks, special_moves, piece_placed):
                     for node in island:
                         board_graph.remove_node((node))
                         board[node[0]][node[1]] = 0
+                        for block in claim_heads:
+                            if node == block["piece"]:
+                                claim_heads.remove(block)
+
 
     
     update_board()
-    return special_moves, piece_placed
+    return special_moves, piece_placed, claim_heads
 
         
 
@@ -625,9 +707,11 @@ def delete_piece(start_blocks, special_moves, piece_placed):
 # Main loop. Refreshes the program and calls methods.
 def main():
     move = 0
+    claim_heads = []
     start_screen()
     clock = pygame.time.Clock()
     run = True
+    game_loop  = True
     player = 0
     special_moves = 0
     available_moves = 1
@@ -636,19 +720,25 @@ def main():
     draw_board()
     start_blocks = select_start()
 
-    while run:
+    while game_loop:
         clock.tick(60)
         piece_placed, available_moves, move, special_moves = place_piece(player, piece_placed, available_moves, move, special_moves)
-        selected_blocks, available_moves, special_moves = claim_line(player, selected_blocks, available_moves, special_moves)
+        selected_blocks, available_moves, special_moves, claim_heads = claim_line(player, selected_blocks, available_moves, special_moves, claim_heads)
         player, piece_placed, available_moves = change_player(player, piece_placed, available_moves, special_moves)
-        special_moves, piece_placed = delete_piece(start_blocks, special_moves, piece_placed)
+        special_moves, piece_placed, claim_heads = delete_piece(start_blocks, special_moves, piece_placed, claim_heads)
+        game_loop = UI_display(player, claim_heads)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                game_loop = False
 
+
+    while run:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+    
     pygame.quit()
-    nx.draw(board_graph)
-    plt.show()
 
 if __name__ == "__main__":
     main()
